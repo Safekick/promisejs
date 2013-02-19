@@ -108,7 +108,7 @@
         return xhr;
     }
 
-    function ajax(method, url, data, headers) {
+    function ajax(method, url, data, headers, filter) {
         var p = new Promise();
         var xhr, payload;
         data = data || {};
@@ -152,7 +152,10 @@
             }
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
-                    p.done(null, xhr.responseText);
+                    if(filter)
+                        p.done(null, filter(xhr.responseText));
+                    else
+                        p.done(null, xhr.responseText);
                 } else {
                     p.done(xhr.status, "");
                 }
@@ -163,9 +166,9 @@
         return p;
     }
 
-    function _ajaxer(method) {
+    function _ajaxer(method, filter) {
         return function(url, data, headers) {
-            return ajax(method, url, data, headers);
+            return ajax(method, url, data, headers, filter);
         };
     }
 
@@ -174,10 +177,17 @@
         join: join,
         chain: chain,
         ajax: ajax,
+
         get: _ajaxer('GET'),
         post: _ajaxer('POST'),
         put: _ajaxer('PUT'),
         del: _ajaxer('DELETE'),
+
+        getJSON: _ajaxer('GET', JSON.parse),
+        postJSON: _ajaxer('POST', JSON.parse),
+        putJSON: _ajaxer('PUT', JSON.parse),
+        delJSON: _ajaxer('DELETE', JSON.parse),
+
 
         /* Error codes */
         ENOXHR: 1,
